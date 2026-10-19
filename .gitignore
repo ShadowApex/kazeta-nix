@@ -1,0 +1,5 @@
+result
+.cache
+*.iso
+.nixos-cache
+hardware-configuration.nix
