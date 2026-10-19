@@ -172,20 +172,22 @@
   # Policy: the console account has no password, so wheel gets sudo without one.
   security.sudo.wheelNeedsPassword = false;
 
-  nixpkgs.config.allowUnfreePredicate =
-    pkg:
-    builtins.elem (lib.getName pkg) [
-      "nvidia-open"
-      "nvidia-settings"
-      "nvidia-utils"
-      "nvidia-vaapi-driver"
-      "nvidia-x11"
-    ];
+  # ─── Nix policy ─────────────────────────────────────────────────────────────
+  # Carts carry whatever licensing they carry, so unfree packages are accepted
+  # outright instead of named one by one.
+  nixpkgs.config.allowUnfree = true;
+
+  # Hosts are rebuilt from their own flake, which needs both new CLI features.
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+
+  nix.nixPath = [ "nixpkgs=channel:nixos-unstable" ];
 
   # ─── Maintenance ────────────────────────────────────────────────────────────
   services.fstrim.enable = true;
 
-  nix.nixPath = [ "nixpkgs=channel:nixos-unstable" ];
   nix.gc = {
     automatic = true;
     dates = "weekly";
