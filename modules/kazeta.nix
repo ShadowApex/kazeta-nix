@@ -90,6 +90,9 @@
   # Arch disabled the iec958 (S/PDIF) profile by editing alsa-card-profile's
   # mixer config, which NixOS ships read-only: S/PDIF is pushed to the bottom of
   # the session priority order instead.
+
+  # SPA-JSON unescapes string values once, so every regex backslash is written
+  # doubled here.
   environment.etc."wireplumber/wireplumber.conf.d/51-kazeta.conf".text = ''
     wireplumber.settings = {
       device.routes.default-sink-volume = 0.9
@@ -97,15 +100,15 @@
 
     monitor.alsa.rules = [
       {
-        matches = [ { node.name = "~alsa_output\..*\.hdmi.*" } ]
+        matches = [ { node.name = "~alsa_output\\..*\\.hdmi.*" } ]
         actions = { update-props = { priority.session = 1300 } }
       }
       {
-        matches = [ { node.name = "~alsa_output\.usb-.*" } ]
+        matches = [ { node.name = "~alsa_output\\.usb-.*" } ]
         actions = { update-props = { priority.session = 1400 } }
       }
       {
-        matches = [ { node.name = "~alsa_output\..*iec958.*" } ]
+        matches = [ { node.name = "~alsa_output\\..*iec958.*" } ]
         actions = { update-props = { priority.session = -1 } }
       }
     ]
