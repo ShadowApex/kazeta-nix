@@ -2,6 +2,9 @@
   lib,
   fetchFromGitHub,
   stdenv,
+  # The session script starts the launcher by absolute path, so it is built
+  # against the launcher from this flake.
+  kazeta,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,9 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
     install -D -m 0644 etc/systemd/system/session-.scope.d/10-timeout.conf \
       $out/lib/systemd/system/session-.scope.d/10-timeout.conf
 
-    # The launcher is installed into the system profile on NixOS, not /usr/bin.
+    # Upstream starts the launcher from /usr/bin; NixOS has no /usr/bin, so the
+    # path points straight at the launcher's store path.
     substituteInPlace $out/bin/kazeta-session \
-      --replace-fail "kazeta_bin=/usr/bin/kazeta" "kazeta_bin=/run/current-system/sw/bin/kazeta"
+      --replace-fail "kazeta_bin=/usr/bin/kazeta" "kazeta_bin=${kazeta}/bin/kazeta"
 
     runHook postInstall
   '';

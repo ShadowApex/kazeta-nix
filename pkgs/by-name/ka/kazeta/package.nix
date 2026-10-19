@@ -13,10 +13,13 @@
   pkg-config,
   # The launcher hardcodes the fallback cart runtime as
   # /usr/share/kazeta/runtimes/none.kzr; NixOS has no /usr/share, so the path is
-  # rewritten to a location the NixOS module populates.
-  noneRuntimePath ? "/run/kazeta/runtimes/none.kzr",
+  # rewritten to the runtime image this flake builds.
+  kazetaRuntimes,
 }:
 
+let
+  noneRuntime = "${kazetaRuntimes}/share/kazeta/runtimes/none.kzr";
+in
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "kazeta";
   version = "0.1.0";
@@ -46,7 +49,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   postPatch = ''
     substituteInPlace src/launcher.rs \
-      --replace-fail '"/usr/share/kazeta/runtimes/none.kzr"' "\"${noneRuntimePath}\""
+      --replace-fail '"/usr/share/kazeta/runtimes/none.kzr"' "\"${noneRuntime}\""
   '';
 
   # macroquad (miniquad) dlopens libX11, libxkbcommon and libXi, in that order,

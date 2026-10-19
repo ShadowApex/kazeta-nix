@@ -16,13 +16,22 @@
 
       # Custom packages, or nixpkgs ones that need Kazeta-specific changes.
       packagesForSystem =
-        pkgs: with pkgs; {
-          kazeta = callPackage ./pkgs/by-name/ka/kazeta/package.nix { };
+        pkgs:
+        with pkgs;
+        let
+          # The launcher reaches its fallback runtime by absolute path and the
+          # session script starts the launcher by absolute path, so both are
+          # wired to the packages built here.
+          kazetaRuntimes = callPackage ./pkgs/by-name/ka/kazeta-runtimes/package.nix { };
+          kazeta = callPackage ./pkgs/by-name/ka/kazeta/package.nix { inherit kazetaRuntimes; };
+        in
+        {
+          inherit kazeta;
           kazeta-automount = callPackage ./pkgs/by-name/ka/kazeta-automount/package.nix { };
           kazeta-inputplumber = callPackage ./pkgs/by-name/ka/kazeta-inputplumber/package.nix { };
           kazeta-mount = callPackage ./pkgs/by-name/ka/kazeta-mount/package.nix { };
-          kazeta-runtimes = callPackage ./pkgs/by-name/ka/kazeta-runtimes/package.nix { };
-          kazeta-session = callPackage ./pkgs/by-name/ka/kazeta-session/package.nix { };
+          kazeta-runtimes = kazetaRuntimes;
+          kazeta-session = callPackage ./pkgs/by-name/ka/kazeta-session/package.nix { inherit kazeta; };
         };
     in
     {

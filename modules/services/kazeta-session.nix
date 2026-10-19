@@ -18,8 +18,6 @@ in
 
     package = mkPackageOption kazetaPkgs "kazeta-session" { };
 
-    launcherPackage = mkPackageOption kazetaPkgs "kazeta" { };
-
     user = mkOption {
       type = types.str;
       default = "gamer";
@@ -76,11 +74,9 @@ in
       "${cfg.package}/share/polkit-1/rules.d/40-system-tweaks.rules";
 
     # Tools the session script calls at runtime: busctl/wpctl, poweroff,
-    # inputplumber.
-    environment.systemPackages = [
-      cfg.package
-      cfg.launcherPackage
-    ];
+    # inputplumber. The launcher itself is started by store path from the session
+    # package.
+    environment.systemPackages = [ cfg.package ];
 
     users.users.${cfg.user} = {
       isNormalUser = true;

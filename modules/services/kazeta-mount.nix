@@ -15,24 +15,16 @@ in
 {
   options.services.kazeta.mount = with lib; {
     enable = mkEnableOption ''
-      Kazeta game cart mounting: the kazeta-mount helper, .kzr runtime images and the
-      polkit policy that lets the console user mount carts without a password
+      Kazeta game cart mounting: the kazeta-mount helper and the polkit policy
+      that lets the console user mount carts without a password
     '';
 
     package = mkPackageOption kazetaPkgs "kazeta-mount" { };
-
-    runtimesPackage = mkPackageOption kazetaPkgs "kazeta-runtimes" { };
 
     dataDir = mkOption {
       type = types.str;
       default = "/var/kazeta";
       description = "Persistent game and cart data. Kept out of the home directory so a reinstall does not touch saves.";
-    };
-
-    runtimeDir = mkOption {
-      type = types.str;
-      default = "/run/kazeta/runtimes";
-      description = "Directory the launcher looks in for the fallback .kzr runtime images.";
     };
   };
 
@@ -51,16 +43,10 @@ in
 
     environment.systemPackages = [
       cfg.package
-      cfg.runtimesPackage
       pkgs.fuse3
     ];
 
     systemd.tmpfiles.rules = [
-      # The launcher hardcodes its fallback runtime path; expose the store image
-      # there.
-      "d ${cfg.runtimeDir} 0755 root root -"
-      "L ${cfg.runtimeDir}/none.kzr - - - - ${cfg.runtimesPackage}/share/kazeta/runtimes/none.kzr"
-
       # Ported from the Arch image's /var/kazeta plus the XDG symlinks.
       "d ${cfg.dataDir} 0750 ${sessionUser} ${sessionUser} -"
       "d ${cfg.dataDir}/state 0750 ${sessionUser} ${sessionUser} -"

@@ -1,4 +1,5 @@
 {
+  bash,
   lib,
   runCommand,
   squashfsTools,
@@ -11,12 +12,18 @@
 # the image is reproducible: a squashfs (read-only is all a lower layer needs)
 # holding the `./.kazeta/share/run` entrypoint the launcher executes inside the
 # merged cart mount.
+#
+# The entrypoint names bash's store path in its shebang: the kernel resolves that
+# path before any PATH is consulted, and NixOS has no `/bin/bash`.
 runCommand "kazeta-runtimes"
   {
     pname = "kazeta-runtimes";
     version = "0.1.0";
 
-    nativeBuildInputs = [ squashfsTools ];
+    nativeBuildInputs = [
+      bash
+      squashfsTools
+    ];
 
     meta = with lib; {
       description = "Kazeta cart runtimes (.kzr images)";
@@ -29,7 +36,7 @@ runCommand "kazeta-runtimes"
   ''
     mkdir -p work/.kazeta/share $out/share/kazeta/runtimes
 
-    printf '#! /bin/bash\n\nbash $1\n' > work/.kazeta/share/run
+    printf '#! ${bash}/bin/bash\n\n${bash}/bin/bash $1\n' > work/.kazeta/share/run
     chmod 0755 work/.kazeta/share/run
 
     # mksquashfs honours SOURCE_DATE_EPOCH, so no explicit timestamp options are
