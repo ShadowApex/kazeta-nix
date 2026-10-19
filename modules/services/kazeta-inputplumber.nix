@@ -41,5 +41,14 @@ in
     # /run/current-system/sw/share/inputplumber is where the daemon finds its
     # device profiles; without linking, only one package's share dir would win.
     environment.pathsToLink = [ "/share/inputplumber" ];
+
+    # The system bus denies own="*" by default, and nixpkgs' InputPlumber module
+    # never installs the package's D-Bus policy, so the daemon would be refused
+    # its name (org.shadowblip.InputPlumber) and exit on start.
+    services.dbus.packages = [ cfg.package ];
+
+    # Device setup rules, hidraw uaccess and the per-handheld hwdb ship with the
+    # package; nixpkgs' InputPlumber module installs none of them.
+    services.udev.packages = [ cfg.package ];
   };
 }

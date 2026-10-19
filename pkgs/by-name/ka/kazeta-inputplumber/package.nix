@@ -44,6 +44,15 @@ runCommand "kazeta-inputplumber-${inputplumber.version}"
       ln -s ${inputplumber}/lib $out/lib
     fi
 
+    # D-Bus policies, polkit rules and friends: NixOS modules scan these from
+    # the package, so they have to survive the wrapper.
+    for d in ${inputplumber}/share/*; do
+      name=$(basename "$d")
+      if [ "$name" != "inputplumber" ]; then
+        ln -s "$d" $out/share/$name
+      fi
+    done
+
     for d in ${inputplumber}/share/inputplumber/*; do
       name=$(basename "$d")
       if [ "$name" = "devices" ]; then
