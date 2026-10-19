@@ -151,6 +151,7 @@
       pkgs.alsa-lib
       pkgs.cairo
       pkgs.expat
+      pkgs.icu
       pkgs.stdenv.cc.cc.lib
       pkgs.glibc
       pkgs.keyutils
@@ -166,7 +167,8 @@
       pkgs.libxfixes
       pkgs.libxi
       pkgs.libxrandr
-    ];
+    ]
+    ++ pkgs.steam-run.args.multiPkgs pkgs;
   };
 
   # ─── Security ───────────────────────────────────────────────────────────────
