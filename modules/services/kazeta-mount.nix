@@ -54,8 +54,8 @@ in
       "d /home/${sessionUser}/.local 0755 ${sessionUser} ${sessionUser} -"
       "d /home/${sessionUser}/.local/share 0755 ${sessionUser} ${sessionUser} -"
       "d /home/${sessionUser}/.local/state 0755 ${sessionUser} ${sessionUser} -"
-      "L /home/${sessionUser}/.local/share/kazeta - ${sessionUser} ${sessionUser} ${cfg.dataDir}"
-      "L /home/${sessionUser}/.local/state/wireplumber - ${sessionUser} ${sessionUser} ${cfg.dataDir}/state/wireplumber"
+      "L /home/${sessionUser}/.local/share/kazeta - - - - ${cfg.dataDir}"
+      "L /home/${sessionUser}/.local/state/wireplumber - - - - ${cfg.dataDir}/state/wireplumber"
     ];
 
     boot.kernelModules = [
