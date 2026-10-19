@@ -17,7 +17,7 @@ modules/kazeta.nix        the console configuration (boot, audio, graphics, iden
 modules/installer.nix     the live image: boot straight into the launcher
 modules/services/*.nix    services.kazeta.* options
 pkgs/by-name/ka/*         kazeta, kazeta-session, kazeta-mount, kazeta-runtimes
-templates/host-x86_64/    example host configuration
+templates/host-*/         example host configuration, one per architecture
 Taskfile.yaml             test / build:iso / build:package / update tasks
 ```
 

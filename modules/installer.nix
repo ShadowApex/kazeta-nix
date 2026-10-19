@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, pkgs, ... }:
 
 {
   # The live image *is* Kazeta: no installer program, no desktop environment.
@@ -14,6 +14,10 @@
   networking.useNetworkd = lib.mkForce false;
   systemd.network.enable = lib.mkForce false;
   services.resolved.enable = lib.mkForce false;
+
+  # The installation profile offers Memtest86+ on the boot menu, but the package
+  # is x86-only.
+  boot.loader.grub.memtest86.enable = lib.mkForce pkgs.stdenv.hostPlatform.isx86_64;
 
   isoImage.volumeID = lib.mkDefault "kazeta";
   isoImage.makeEfiBootable = true;

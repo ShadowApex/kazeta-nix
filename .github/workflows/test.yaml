@@ -38,5 +38,11 @@ jobs:
         env:
           NIXPKGS_ALLOW_UNFREE: "1"
 
+      # Cross-building aarch64 is not supported, so only evaluate it.
+      - name: Evaluate the aarch64 configuration
+        run: make test-aarch64
+        env:
+          NIXPKGS_ALLOW_UNFREE: "1"
+
       - name: Check formatting
         run: make test-format

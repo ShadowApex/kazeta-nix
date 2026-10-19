@@ -5,6 +5,11 @@
   ...
 }:
 
+let
+  # 32-bit multilib and the NVIDIA driver stack only exist for x86_64 in
+  # nixpkgs; an aarch64 console uses mesa and its SoC's own KMS driver.
+  x86Only = pkgs.stdenv.hostPlatform.isx86_64;
+in
 {
   imports = [ ./services ];
 
@@ -23,6 +28,8 @@
     "quiet"
     "splash"
     "loglevel=3"
+  ]
+  ++ lib.optionals x86Only [
     "nvidia-drm.modeset=1"
   ];
   # kmscon renders the VT itself, so no fbdev fallback. vkms provides a KMS
@@ -35,15 +42,19 @@
   };
 
   boot.initrd.availableKernelModules = [
-    "xhci_pci"
-    "ehci_pci"
-    "ahci"
     "nvme"
     "usbhid"
     "usb_storage"
     "sd_mod"
     "sr_mod"
     "mmc_block"
+  ]
+  ++ lib.optionals x86Only [
+    # PCI host controllers as PC firmware enumerates them; on aarch64 the
+    # board's own controller drivers come from its generated hardware config.
+    "xhci_pci"
+    "ehci_pci"
+    "ahci"
   ];
   boot.extraModulePackages = [ ];
 
@@ -118,17 +129,18 @@
   programs.gamescope.enable = true;
 
   # 32-bit Vulkan and OpenGL are required: most of the catalog is 32-bit Windows
-  # or Linux builds running through Wine or Steam.
+  # or Linux builds running through Wine or Steam. The i686 package set behind
+  # them is only defined for x86_64.
   hardware.graphics = {
     enable = true;
-    enable32Bit = true;
+    enable32Bit = x86Only;
   };
 
   # Read-only, derived from the X server's video driver list; gamescope runs
   # without an X server, so the modules are loaded explicitly.
-  services.xserver.videoDrivers = [ "nvidia" ];
+  services.xserver.videoDrivers = lib.optionals x86Only [ "nvidia" ];
 
-  hardware.nvidia = {
+  hardware.nvidia = lib.optionalAttrs x86Only {
     open = true;
     modesetting.enable = true;
     nvidiaSettings = true;
@@ -137,6 +149,8 @@
 
   boot.kernelModules = [
     "vkms"
+  ]
+  ++ lib.optionals x86Only [
     "nvidia"
     "nvidia_modeset"
     "nvidia_drm"

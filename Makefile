@@ -63,10 +63,16 @@ test-format: ## Check that Nix files are formatted with nixfmt
 	nix fmt -- --check .
 
 .PHONY: build-iso
-build-iso: ## Build the live Kazeta ISO image (ARCH must be x86_64)
-	@test "$(ARCH)" = x86_64 || { echo 'error: ARCH must be x86_64' >&2; exit 1; }
+build-iso: ## Build the live Kazeta ISO image (ARCH: x86_64 or aarch64, built natively)
+	@test "$(ARCH)" = x86_64 -o "$(ARCH)" = aarch64 || { \
+		echo 'error: ARCH must be x86_64 or aarch64' >&2; exit 1; }
 	NIXPKGS_ALLOW_UNFREE=1 nix build --impure \
 		.#nixosConfigurations.iso-$(ARCH).config.system.build.isoImage
+
+.PHONY: test-aarch64
+test-aarch64: ## Evaluate the aarch64 system configuration; building it needs an aarch64 host
+	NIXPKGS_ALLOW_UNFREE=1 nix eval --raw \
+		.#nixosConfigurations.iso-aarch64.config.system.build.toplevel.drvPath
 
 .PHONY: build-package
 build-package: ## Build a single package from the repo (PACKAGE required)
