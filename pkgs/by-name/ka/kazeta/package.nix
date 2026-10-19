@@ -7,6 +7,8 @@
   libevdev,
   libGL,
   libX11,
+  libxi,
+  libxkbcommon,
   makeWrapper,
   pkg-config,
   # The launcher hardcodes the fallback cart runtime as
@@ -42,14 +44,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libevdev
   ];
 
-  # macroquad (miniquad) loads X11, OpenGL and ALSA with dlopen at runtime, and
-  # gilrs/evdev need libudev/libevdev. Nothing is linked statically, so the
-  # libraries have to be visible in LD_LIBRARY_PATH.
   postPatch = ''
     substituteInPlace src/launcher.rs \
       --replace-fail '"/usr/share/kazeta/runtimes/none.kzr"' "\"${noneRuntimePath}\""
   '';
 
+  # macroquad (miniquad) dlopens libX11, libxkbcommon and libXi, in that order,
+  # plus OpenGL and ALSA, and gilrs/evdev need libudev/libevdev. None of it is
+  # linked statically, so all of it has to be visible in LD_LIBRARY_PATH; a
+  # missing library aborts the launcher inside gamescope.
   postInstall = ''
     wrapProgram $out/bin/kazeta \
       --prefix LD_LIBRARY_PATH : "${
@@ -59,6 +62,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
           libevdev
           libGL
           libX11
+          libxi
+          libxkbcommon
         ]
       }"
   '';

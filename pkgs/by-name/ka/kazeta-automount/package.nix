@@ -1,10 +1,12 @@
 {
   lib,
+  coreutils,
   fetchFromGitHub,
   findutils,
   gawk,
   gnugrep,
   makeWrapper,
+  procps,
   stdenv,
   systemd,
   util-linux,
@@ -52,9 +54,16 @@ stdenv.mkDerivation (finalAttrs: {
     # udev rules and the template unit must call the store paths NixOS provides.
     substituteInPlace $out/lib/systemd/system/media-automount@.service \
       --replace-fail "/usr/bin/media-automount" "$out/bin/media-automount"
+
+    # Upstream fires for every sd*, vd* and nvme* device, which covers the
+    # internal disk, and "sdhci" matches sd[a-z]*, so the mmc host devices
+    # reach the script too. Carts arrive over USB or the SD reader only.
     substituteInPlace $out/lib/udev/rules.d/99-media-automount.rules \
       --replace-fail "/usr/bin/systemctl" "${systemd}/bin/systemctl" \
-      --replace-fail 'mmcblk[0-9]p[0-9]' 'mmcblk*'
+      --replace-fail 'mmcblk[0-9]p[0-9]' 'mmcblk*' \
+      --replace-fail 'ACTION=="add",' 'ENV{ID_BUS}=="usb|mmc", ACTION=="add",' \
+      --replace-fail 'ACTION=="remove",' \
+        'ENV{ID_BUS}=="usb|mmc", ACTION=="remove",'
 
     # Optical carts (sr*) report "change", not "add".
     cat >> $out/lib/udev/rules.d/99-media-automount.rules <<EOF
@@ -65,13 +74,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # The script also calls id, mkdir, rmdir and wc from coreutils, and ps from
+  # procps; without coreutils the mount point is never created and every
+  # automount fails.
   postFixup = ''
     wrapProgram $out/bin/media-automount \
       --prefix PATH : ${
         lib.makeBinPath [
+          coreutils
           findutils
           gawk
           gnugrep
+          procps
           systemd
           util-linux
         ]
